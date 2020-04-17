@@ -1,7 +1,8 @@
 import Discord from 'discord.js';
 
-type Feature<T> = (event: T, client: Discord.Client, next: () => unknown) => unknown;
-type MessageFeature = Feature<Discord.Message>;
+export type NextFunction = () => unknown;
+export type Feature<T> = (event: T, client: Discord.Client, next: NextFunction) => unknown;
+export type MessageFeature = Feature<Discord.Message>;
 type Features = {
   message: MessageFeature[];
 };

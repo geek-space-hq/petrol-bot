@@ -1,4 +1,5 @@
 import { boot } from './bot';
+import { quote } from './modules';
 
 async function main() {
   console.log('GSBot v1.0.0');
@@ -11,13 +12,7 @@ async function main() {
 
   const bot = await boot(token);
 
-  bot.onMessage((message, _, next) => {
-    if (message.content.toLowerCase().includes('ping')) {
-      message.channel.send('pong!');
-    } else {
-      next();
-    }
-  });
+  bot.onMessage(quote);
 
   console.log('Ready');
 }
