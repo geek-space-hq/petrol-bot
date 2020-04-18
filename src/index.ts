@@ -1,5 +1,6 @@
-import { boot } from './bot';
+import { boot, command } from './bot';
 import { quote } from './modules';
+import { limitHistory, limitHistoryCommand } from './modules/limit-history';
 
 async function main() {
   console.log('GSBot v1.0.0');
@@ -12,6 +13,8 @@ async function main() {
 
   const bot = await boot(token);
 
+  bot.onMessage(command('ps!', 'meslimit', limitHistoryCommand));
+  bot.onMessage(limitHistory);
   bot.onMessage(quote);
 
   console.log('Ready');
