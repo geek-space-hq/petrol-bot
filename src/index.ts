@@ -1,6 +1,6 @@
 import { boot, command } from './bot';
-import { quote } from './modules';
 import { limitHistory, limitHistoryCommand } from './modules/limit-history';
+import { quote } from './modules/quote';
 
 async function main() {
   console.log('GSBot v1.0.0');
