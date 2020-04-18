@@ -21,9 +21,12 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
   const channelId = matches[2];
   const messageId = matches[3];
 
-  const channel = message.guild.channels.resolve(channelId);
-  const quoted = await resolveOrNull(message.channel.messages.fetch(messageId));
-  if (!channel || !quoted) {
+  const channel = message.guild.channels.resolve(channelId) as Discord.TextChannel;
+  if (!channel || channel.type !== 'text') {
+    return;
+  }
+  const quoted = await resolveOrNull(channel.messages.fetch(messageId));
+  if (!quoted) {
     return;
   }
 
