@@ -8,9 +8,11 @@
   },
   "dependencies": {
     "@types/ws": "^7.2.4",
-    "discord.js": "^12.1.1"
+    "discord.js": "^12.1.1",
+    "ioredis": "^4.16.2"
   },
   "devDependencies": {
+    "@types/ioredis": "^4.14.9",
     "@types/node": "^13.11.1",
     "@typescript-eslint/eslint-plugin": "2.19.0",
     "@typescript-eslint/parser": "2.19.0",
