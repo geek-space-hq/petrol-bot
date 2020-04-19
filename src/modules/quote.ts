@@ -37,5 +37,10 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
     .setDescription(quoted.content)
     .setFooter(`${message.guild.name}, #${channel.name} - ${timestamp}`);
 
+  const attachment = quoted.attachments.first();
+  if (attachment) {
+    embed.setImage(attachment.url);
+  }
+
   message.channel.send(embed);
 }
