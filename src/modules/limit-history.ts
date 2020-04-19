@@ -179,7 +179,7 @@ export async function limitHistory(message: Discord.Message, client: Discord.Cli
     redis.rpush(key, message.id);
     if ((await redis.llen(key)) > limit) {
       const messageId = await redis.lpop(key);
-      const resolved = message.channel.messages.resolve(messageId);
+      const resolved = await resolveOrNull(message.channel.messages.fetch(messageId));
       if (resolved) {
         await resolved.delete();
       }
