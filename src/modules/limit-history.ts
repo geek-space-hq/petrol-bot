@@ -104,7 +104,7 @@ async function disallow(member: Discord.GuildMember, args: string[]) {
   const roleName = role ? role.name : 'Unknown';
 
   if ((await redis.srem(`meslimit/${guildId}/roles`, roleId)) !== 1) {
-    return errors.already;
+    return errors.notYet;
   }
 
   return `${roleName}を許可された役職から除外しました。`;
