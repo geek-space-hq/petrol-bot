@@ -9,8 +9,8 @@ async function getLimit(channelId: string): Promise<number> {
   return limit === null ? 0 : Number(limit);
 }
 
-async function getRoles(channelId: string): Promise<string[]> {
-  const roles = await resolveOrNull(redis.smembers(`meslimit/${channelId}/roles`));
+async function getRoles(guildId: string): Promise<string[]> {
+  const roles = await resolveOrNull(redis.smembers(`meslimit/${guildId}/roles`));
   if (roles === null) {
     return [];
   }
@@ -48,7 +48,7 @@ const errors = {
 
 async function status(member: Discord.GuildMember, channelId: string) {
   const guild = member.guild;
-  const roles = await getRoles(channelId);
+  const roles = await getRoles(guild.id);
 
   const limit = await getLimit(channelId);
   const roleNames = roles
@@ -61,9 +61,10 @@ async function status(member: Discord.GuildMember, channelId: string) {
   return limit > 0 ? `meslimit: 有効, ${limit} messages\n${allowedRoles}` : `meslimit: 無効\n${allowedRoles}`;
 }
 
-async function allow(member: Discord.GuildMember, channelId: string, args: string[]) {
+async function allow(member: Discord.GuildMember, args: string[]) {
   const guild = member.guild;
-  const roles = await getRoles(channelId);
+  const guildId = guild.id;
+  const roles = await getRoles(guildId);
   if (!(await isAllowed(member, guild, roles))) {
     return errors.disallowed;
   }
@@ -79,16 +80,17 @@ async function allow(member: Discord.GuildMember, channelId: string, args: strin
   }
   const roleName = role.name;
 
-  if ((await redis.sadd(`meslimit/${channelId}/roles`, roleId)) !== 1) {
+  if ((await redis.sadd(`meslimit/${guildId}/roles`, roleId)) !== 1) {
     return errors.already;
   }
 
   return `${roleName}を許可された役職に追加しました。`;
 }
 
-async function disallow(member: Discord.GuildMember, channelId: string, args: string[]) {
+async function disallow(member: Discord.GuildMember, args: string[]) {
   const guild = member.guild;
-  const roles = await getRoles(channelId);
+  const guildId = guild.id;
+  const roles = await getRoles(guildId);
   if (!(await isAllowed(member, guild, roles))) {
     return errors.disallowed;
   }
@@ -101,7 +103,7 @@ async function disallow(member: Discord.GuildMember, channelId: string, args: st
   const role = guild.roles.resolve(roleId);
   const roleName = role ? role.name : 'Unknown';
 
-  if ((await redis.srem(`meslimit/${channelId}/roles`, roleId)) !== 1) {
+  if ((await redis.srem(`meslimit/${guildId}/roles`, roleId)) !== 1) {
     return errors.already;
   }
 
@@ -153,10 +155,10 @@ export async function limitHistoryCommand(message: Discord.Message, _: Discord.C
         return await status(member, channelId);
 
       case 'allow':
-        return await allow(member, channelId, args);
+        return await allow(member, args);
 
       case 'disallow':
-        return await disallow(member, channelId, args);
+        return await disallow(member, args);
 
       case 'enable':
         return await setLimit(member, channelId, Number(args[1] || 10));
