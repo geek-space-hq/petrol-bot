@@ -13,8 +13,8 @@ async function main() {
 
   const bot = await boot(token);
 
-  bot.onMessage(command('ps!', 'meslimit', limitHistoryCommand));
   bot.onMessage(limitHistory);
+  bot.onMessage(command('ps!', 'meslimit', limitHistoryCommand));
   bot.onMessage(quote);
 
   console.log('Ready');
