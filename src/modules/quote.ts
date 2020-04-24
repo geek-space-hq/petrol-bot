@@ -10,37 +10,36 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
     return;
   }
 
-  const pattern = /discordapp\.com\/channels\/([0-9]+)\/([0-9]+)\/([0-9]+)/;
-  const matches = message.content.match(pattern);
+  const pattern = /discordapp\.com\/channels\/([0-9]+)\/([0-9]+)\/([0-9]+)/g;
+  const matches = message.content.matchAll(pattern);
 
-  if (!matches) {
-    next();
-    return;
+  for (const match of matches) {
+    const channelId = match[2];
+    const messageId = match[3];
+
+    const channel = message.guild.channels.resolve(channelId) as Discord.TextChannel;
+    if (!channel || channel.type !== 'text') {
+      return;
+    }
+    const quoted = await resolveOrNull(channel.messages.fetch(messageId));
+    if (!quoted) {
+      return;
+    }
+
+    const avatar = quoted.author.avatarURL() || undefined;
+    const timestamp = dateTime(quoted.createdAt);
+    const embed = new Discord.MessageEmbed()
+      .setAuthor(quoted.author.username, avatar)
+      .setDescription(quoted.content)
+      .setFooter(`${message.guild.name}, #${channel.name} - ${timestamp}`);
+
+    const attachment = quoted.attachments.first();
+    if (attachment) {
+      embed.setImage(attachment.url);
+    }
+
+    await message.channel.send(embed);
   }
 
-  const channelId = matches[2];
-  const messageId = matches[3];
-
-  const channel = message.guild.channels.resolve(channelId) as Discord.TextChannel;
-  if (!channel || channel.type !== 'text') {
-    return;
-  }
-  const quoted = await resolveOrNull(channel.messages.fetch(messageId));
-  if (!quoted) {
-    return;
-  }
-
-  const avatar = quoted.author.avatarURL() || undefined;
-  const timestamp = dateTime(quoted.createdAt);
-  const embed = new Discord.MessageEmbed()
-    .setAuthor(quoted.author.username, avatar)
-    .setDescription(quoted.content)
-    .setFooter(`${message.guild.name}, #${channel.name} - ${timestamp}`);
-
-  const attachment = quoted.attachments.first();
-  if (attachment) {
-    embed.setImage(attachment.url);
-  }
-
-  message.channel.send(embed);
+  next();
 }
