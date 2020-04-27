@@ -135,7 +135,7 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
       spawnChild('isolate', ['-b', id, '--cleanup']);
     }
   } else {
-    message.channel.send('ソースコードが貼られていないか、または言語名が指定されていません。');
+    message.channel.send('ソースコードか言語名が指定されていません。');
   }
 
   next();
