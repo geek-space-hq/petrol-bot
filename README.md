@@ -8,6 +8,8 @@ There's no guarantee this bot works on the other servers.
 
 - [Node.js](https://nodejs.org/)
 
+- [isolate](https://github.com/ioi/isolate)
+
 ## Set up
 
 1. Install all dependencies
