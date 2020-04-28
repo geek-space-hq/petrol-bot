@@ -71,13 +71,14 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
     return;
   }
 
-  const pattern = /^```(.*)$\n((.|\n)+)\n^```$/m;
-  const match = content.match(pattern);
+  const pattern = /^```(.*)$\n((.|\n)+?)\n^```$/gm;
+  const matches = [...content.matchAll(pattern)];
   const id = String(Math.floor(Math.random() * 1000));
 
-  if (match) {
-    const languageName = match[1].toLowerCase();
-    const source = match[2];
+  if (matches.length >= 1) {
+    const languageName = matches[0][1].toLowerCase();
+    const source = matches[0][2];
+    const stdin = matches.length >= 2 ? matches[1][2] : '';
 
     const languages = await getLanguages();
     const language = languages[languageName];
@@ -97,6 +98,7 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
       })();
 
       await writeFileAsync(resolve(containerPath, 'box', filename), source);
+      await writeFileAsync(resolve(containerPath, 'box', 'stdin'), stdin);
       let lastResult = '';
       for (const step of steps) {
         const begin = Date.now();
@@ -112,6 +114,7 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
           '16384',
           '-b',
           id,
+          '--stdin=stdin',
           '--stderr-to-stdout',
           '--processes=4',
           '--env=PATH=/usr/bin',
