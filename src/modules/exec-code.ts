@@ -99,6 +99,7 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
       await writeFileAsync(resolve(containerPath, 'box', filename), source);
       let lastResult = '';
       for (const step of steps) {
+        const begin = Date.now();
         const result = await spawnChild('isolate', [
           '--dir=dev=',
           '--dir=proc=',
@@ -121,7 +122,8 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
         const code = result[0];
         const stdout = result[1].toString('utf-8');
         const sliced = stdout.length > 1900 ? stdout.slice(0, 1900) + '...' : stdout;
-        lastResult = `\`\`\`\n${sliced}\n\`\`\``;
+        const elapsed = Date.now() - begin;
+        lastResult = `\`\`\`\n${sliced}\n\`\`\`\n経過時間: ${elapsed}ms`;
         if (code !== 0) {
           lastResult += `\n0以外のコードで終了しました: ${code}`;
           break;
