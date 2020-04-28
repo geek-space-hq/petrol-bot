@@ -71,13 +71,14 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
     return;
   }
 
-  const pattern = /^```(.*)$\n((.|\n)+)\n^```$/m;
-  const match = content.match(pattern);
+  const pattern = /^```(.*)$\n((.|\n)+?)\n^```$/gm;
+  const matches = [...content.matchAll(pattern)];
   const id = String(Math.floor(Math.random() * 1000));
 
-  if (match) {
-    const languageName = match[1].toLowerCase();
-    const source = match[2];
+  if (matches.length >= 1) {
+    const languageName = matches[0][1].toLowerCase();
+    const source = matches[0][2];
+    const stdin = matches.length >= 2 ? matches[1][2] : '';
 
     const languages = await getLanguages();
     const language = languages[languageName];
@@ -97,8 +98,10 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
       })();
 
       await writeFileAsync(resolve(containerPath, 'box', filename), source);
+      await writeFileAsync(resolve(containerPath, 'box', 'stdin'), stdin);
       let lastResult = '';
       for (const step of steps) {
+        const begin = Date.now();
         const result = await spawnChild('isolate', [
           '--dir=dev=',
           '--dir=proc=',
@@ -111,6 +114,7 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
           '16384',
           '-b',
           id,
+          '--stdin=stdin',
           '--stderr-to-stdout',
           '--processes=4',
           '--env=PATH=/usr/bin',
@@ -121,7 +125,8 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
         const code = result[0];
         const stdout = result[1].toString('utf-8');
         const sliced = stdout.length > 1900 ? stdout.slice(0, 1900) + '...' : stdout;
-        lastResult = `\`\`\`\n${sliced}\n\`\`\``;
+        const elapsed = Date.now() - begin;
+        lastResult = `\`\`\`\n${sliced}\n\`\`\`\n経過時間: ${elapsed}ms`;
         if (code !== 0) {
           lastResult += `\n0以外のコードで終了しました: ${code}`;
           break;
