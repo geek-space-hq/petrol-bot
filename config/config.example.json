@@ -1,0 +1,13 @@
+{
+  "exec-code": {
+    "languages": [
+      {
+        "names": ["python", "py"],
+        "source": "main.py",
+        "steps": [
+          "/usr/bin/python3 main.py"
+        ]
+      }
+    ]
+  }
+}
