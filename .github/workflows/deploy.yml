@@ -6,6 +6,7 @@ on:
 env:
   NODE_VERSION: '13.10.1'
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
+  TARGET_IP: ${{ secrets.TARGET_IP }}
 
 jobs:
   build-and-deploy:
@@ -26,5 +27,5 @@ jobs:
         echo "$SECRET_KEY" > secret.pem
         chmod 600 secret.pem
         sudo apt install rsync
-        ssh-keyscan -H 118.27.17.186 > known_hosts
-        rsync -av -e "ssh -o UserKnownHostsFile=known_hosts -i secret.pem" dist/ minnet@118.27.17.186:/home/minnet/gsbot/dist
+        ssh-keyscan -H $TARGET_IP > known_hosts 2>&1
+        rsync -av -e "ssh -o UserKnownHostsFile=known_hosts -i secret.pem" dist/ minnet@$TARGET_IP:/home/minnet/gsbot/dist
