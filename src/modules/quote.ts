@@ -10,12 +10,12 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
     return;
   }
 
-  const pattern = /discordapp\.com\/channels\/([0-9]+)\/([0-9]+)\/([0-9]+)/g;
+  const pattern = /discord(app)?\.com\/channels\/([0-9]+)\/([0-9]+)\/([0-9]+)/g;
   const matches = message.content.matchAll(pattern);
 
   for (const match of matches) {
-    const channelId = match[2];
-    const messageId = match[3];
+    const channelId = match[3];
+    const messageId = match[4];
 
     const channel = message.guild.channels.resolve(channelId) as Discord.TextChannel;
     if (!channel || channel.type !== 'text') {
