@@ -1,6 +1,5 @@
+import { promises as fs } from 'fs';
 import { resolve } from 'path';
-
-import { readFileAsync } from './async-fs';
 
 type Item = string | number | Config;
 
@@ -12,8 +11,8 @@ let cached: Config | null = null;
 
 export async function getConfig(...keys: (string | number)[]) {
   if (!cached) {
-    const config = await readFileAsync(resolve(process.cwd(), 'config/config.json'));
-    const parsed: Config = JSON.parse(config);
+    const config = await fs.readFile(resolve(process.cwd(), 'config/config.json'));
+    const parsed: Config = JSON.parse(config.toString('utf-8'));
     cached = parsed;
   }
 
