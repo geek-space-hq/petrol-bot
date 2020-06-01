@@ -1,8 +1,8 @@
 import Discord from 'discord.js';
+import { promises as fs } from 'fs';
 import { resolve } from 'path';
 
 import { NextFunction } from '../bot';
-import { writeFileAsync } from '../lib/async-fs';
 import { spawnChild } from '../lib/async-process';
 import { getConfig, getSubItem } from '../lib/config';
 
@@ -97,8 +97,8 @@ export async function execCode(message: Discord.Message, client: Discord.Client,
         return result[1].toString('utf-8').trim();
       })();
 
-      await writeFileAsync(resolve(containerPath, 'box', filename), source);
-      await writeFileAsync(resolve(containerPath, 'box', 'stdin'), stdin);
+      await fs.writeFile(resolve(containerPath, 'box', filename), source);
+      await fs.writeFile(resolve(containerPath, 'box', 'stdin'), stdin);
       let lastResult = '';
       for (const step of steps) {
         const begin = Date.now();
