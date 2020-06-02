@@ -15,18 +15,18 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
 
   for (const match of matches) {
     if (!match.groups) {
-      return;
+      continue;
     }
 
     const { channelId, messageId } = match.groups;
 
     const channel = message.guild.channels.resolve(channelId) as Discord.TextChannel;
     if (!channel || channel.type !== 'text') {
-      return;
+      continue;
     }
     const quoted = await resolveOrNull(channel.messages.fetch(messageId));
     if (!quoted) {
-      return;
+      continue;
     }
 
     const avatar = quoted.author.avatarURL() || undefined;
