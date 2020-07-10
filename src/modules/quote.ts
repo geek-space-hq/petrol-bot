@@ -41,7 +41,11 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
       embed.setImage(attachment.url);
     }
 
-    await message.channel.send(embed);
+    const embeds = [embed, ...(quoted.embeds.length > 0 ? ['Embeds:', ...quoted.embeds] : [])];
+
+    for (const embed of embeds) {
+      await message.channel.send(embed);
+    }
   }
 
   next();
