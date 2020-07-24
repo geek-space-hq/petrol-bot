@@ -2,6 +2,7 @@ import { boot, command } from './bot';
 import { execCode } from './modules/exec-code';
 import { limitHistory, limitHistoryCommand } from './modules/limit-history';
 import { quote } from './modules/quote';
+import { searchVimHelp } from './modules/vim-help';
 
 async function main() {
   console.log('GSBot v1.0.0');
@@ -18,6 +19,7 @@ async function main() {
   bot.onMessage(limitHistory);
   bot.onMessage(command('ps!', 'meslimit', limitHistoryCommand));
   bot.onMessage(quote);
+  bot.onMessage(searchVimHelp);
 
   console.log('Ready');
 }

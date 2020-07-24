@@ -9,7 +9,8 @@
   "dependencies": {
     "@types/ws": "^7.2.4",
     "discord.js": "^12.1.1",
-    "ioredis": "^4.16.2"
+    "ioredis": "^4.16.2",
+    "vimhelp": "^2.0.0"
   },
   "devDependencies": {
     "@types/ioredis": "^4.14.9",
