@@ -38,7 +38,11 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
 
     const attachment = quoted.attachments.first();
     if (attachment) {
-      embed.setImage(attachment.url);
+      if (attachment.spoiler) {
+        embed.attachFiles([attachment]);
+      } else {
+        embed.setImage(attachment.url);
+      }
     }
 
     const embeds = [embed, ...(quoted.embeds.length > 0 ? ['Embeds:', ...quoted.embeds] : [])];
