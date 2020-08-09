@@ -4,7 +4,6 @@ on:
       - develop
 
 env:
-  NODE_VERSION: '13.10.1'
   SECRET_KEY: ${{ secrets.SECRET_KEY }}
   TARGET_IP: ${{ secrets.TARGET_IP }}
 
@@ -14,18 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-    - name: npm install and build
-      run: |
-        npm install
-        npm run build
     - name: 'Deploy with rsync'
       run: |
         echo "$SECRET_KEY" > secret.pem
         chmod 600 secret.pem
         sudo apt install rsync
         ssh-keyscan -H $TARGET_IP > known_hosts 2>&1
-        rsync -av -e "ssh -o UserKnownHostsFile=known_hosts -i secret.pem" dist/ minnet@$TARGET_IP:/home/minnet/gsbot/dist
+        rsync -av -e "ssh -o UserKnownHostsFile=known_hosts -i secret.pem" ./ minnet@$TARGET_IP:/home/minnet/gsbot
+        ssh -o UserKnownHostsFile=known_hosts -i secret.pem minnet@$TARGET_IP "cd gsbot; docker-compose down; docker-compose build && docker-compose up -d"
