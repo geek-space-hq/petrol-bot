@@ -18,8 +18,14 @@ services:
     image: redis:6.0.4-alpine
     networks:
       - internal_network
+    volumes:
+      - redis-volume:/data
     
 networks:
   internal_network:
     internal: true
   external_network:
+
+volumes:
+  redis-volume:
+    external: true
