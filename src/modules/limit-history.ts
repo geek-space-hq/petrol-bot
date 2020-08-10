@@ -101,10 +101,7 @@ async function removeLimit(member: Discord.GuildMember, channelId: string) {
   return '履歴の件数の制限を解除しました。';
 }
 
-export const limitHistoryCommand = command(
-  'ps!',
-  'meslimit',
-  async (message: Discord.Message, _: Discord.Client, args: string[]) => {
+async function limitHistoryCommand(message: Discord.Message, _: Discord.Client, args: string[]) {
     const operation = args[0] || 'status';
     const channelId = message.channel.id;
     const guild = message.guild;
@@ -137,10 +134,9 @@ export const limitHistoryCommand = command(
       }
     })();
     message.channel.send(result);
-  },
-);
+}
 
-export const limitHistory = onMessage(async (message: Discord.Message, _client: Discord.Client) => {
+async function limitHistory(message: Discord.Message, _client: Discord.Client) {
   const channelId = message.channel.id;
   const limit = await getLimit(channelId);
   if (limit > 0) {
@@ -154,4 +150,9 @@ export const limitHistory = onMessage(async (message: Discord.Message, _client: 
       }
     }
   }
-});
+}
+
+export default [
+  command('ps!', 'meslimit', limitHistoryCommand),
+  onMessage(limitHistory),
+]

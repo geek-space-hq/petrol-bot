@@ -1,8 +1,8 @@
 import { boot } from './bot';
-import { execCode } from './modules/exec-code';
-import { limitHistory, limitHistoryCommand } from './modules/limit-history';
-import { quote } from './modules/quote';
-import { searchVimHelp } from './modules/vim-help';
+import ExecCode from './modules/exec-code';
+import LimitHistory from './modules/limit-history';
+import Quote from './modules/quote';
+import VimHelp from './modules/vim-help';
 
 async function main() {
   console.log('GSBot v1.0.0');
@@ -15,10 +15,10 @@ async function main() {
 
   const bot = await boot(token);
 
-  bot.install(execCode);
-  bot.install([limitHistory, limitHistoryCommand]);
-  bot.install(quote);
-  bot.install(searchVimHelp);
+  bot.install(ExecCode);
+  bot.install(LimitHistory);
+  bot.install(Quote);
+  bot.install(VimHelp);
 
   console.log('Ready');
 }

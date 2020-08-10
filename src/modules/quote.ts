@@ -1,10 +1,10 @@
 import Discord from 'discord.js';
 
-import { onMessage } from '../bot';
 import { dateTime } from '../lib/date-time';
 import { resolveOrNull } from '../lib/resolver';
+import { onMessage } from '../bot';
 
-export const quote = onMessage(async (message: Discord.Message, client: Discord.Client) => {
+async function quote(message: Discord.Message, client: Discord.Client) {
   if (!message.guild || !client.user || message.author.id === client.user.id) {
     return;
   }
@@ -50,4 +50,6 @@ export const quote = onMessage(async (message: Discord.Message, client: Discord.
       await message.channel.send(embed);
     }
   }
-});
+}
+
+export default onMessage(quote)

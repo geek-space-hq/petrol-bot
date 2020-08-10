@@ -1,12 +1,11 @@
 import Discord from 'discord.js';
-
 import { onMessage } from '../bot';
 
 const { VimHelp } = require('vimhelp');
 const vimHelp = new VimHelp();
 vimHelp.helplang = ['ja', 'en']; // if Japanese help is installed, use it
 
-export const searchVimHelp = onMessage(async (message: Discord.Message, client: Discord.Client) => {
+async function searchVimHelp(message: Discord.Message, client: Discord.Client) {
   if (!message.guild || !client.user || message.author.id === client.user.id) {
     return;
   }
@@ -30,4 +29,6 @@ export const searchVimHelp = onMessage(async (message: Discord.Message, client: 
     await message.channel.send('予期しないエラーが発生しました。');
     throw err;
   }
-});
+}
+
+export default onMessage(searchVimHelp)
