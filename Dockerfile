@@ -15,7 +15,7 @@ RUN make isolate
 RUN make install
 
 WORKDIR /petrol/petrol
-COPY package.json .
+COPY package.json package-lock.json ./
 RUN npm install
 COPY ./ .
 RUN npm run build
