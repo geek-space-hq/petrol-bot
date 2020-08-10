@@ -1,12 +1,10 @@
 import Discord from 'discord.js';
 
-import { NextFunction } from '../bot';
 import { dateTime } from '../lib/date-time';
 import { resolveOrNull } from '../lib/resolver';
 
-export async function quote(message: Discord.Message, client: Discord.Client, next: NextFunction) {
+export async function quote(message: Discord.Message, client: Discord.Client) {
   if (!message.guild || !client.user || message.author.id === client.user.id) {
-    next();
     return;
   }
 
@@ -51,6 +49,4 @@ export async function quote(message: Discord.Message, client: Discord.Client, ne
       await message.channel.send(embed);
     }
   }
-
-  next();
 }

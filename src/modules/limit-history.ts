@@ -1,6 +1,5 @@
 import Discord from 'discord.js';
 
-import { NextFunction } from '../bot';
 import { redis } from '../lib/redis';
 import { resolveOrNull } from '../lib/resolver';
 import { allowRole, disallowRole, getAllowedRoles, isAllowed } from '../lib/roles';
@@ -136,7 +135,7 @@ export async function limitHistoryCommand(message: Discord.Message, _: Discord.C
   message.channel.send(result);
 }
 
-export async function limitHistory(message: Discord.Message, _client: Discord.Client, next: NextFunction) {
+export async function limitHistory(message: Discord.Message, _client: Discord.Client) {
   const channelId = message.channel.id;
   const limit = await getLimit(channelId);
   if (limit > 0) {
@@ -150,5 +149,4 @@ export async function limitHistory(message: Discord.Message, _client: Discord.Cl
       }
     }
   }
-  next();
 }

@@ -1,42 +1,23 @@
 import Discord from 'discord.js';
 
-export type NextFunction = () => unknown;
-export type Feature<T> = (event: T, client: Discord.Client, next: NextFunction) => unknown;
+export type Feature<T> = (event: T, client: Discord.Client) => unknown;
 export type MessageFeature = Feature<Discord.Message>;
-type Features = {
-  message: MessageFeature[];
-};
 
 class Bot {
-  private features: Features = {
-    message: [],
-  };
+  constructor(private client: Discord.Client) {}
 
   public onMessage(feature: MessageFeature) {
-    this.features.message.push(feature);
-  }
-
-  constructor(client: Discord.Client) {
-    const next = <T>(index: number, features: Feature<T>[], event: T) => () => {
-      const feature = features[index];
-      if (!feature) {
-        return;
-      }
-      feature(event, client, next(index + 1, features, event));
-    };
-
-    client.on('message', message => {
-      next(0, this.features.message, message)();
+    this.client.on('message', message => {
+      feature(message, this.client);
     });
   }
 }
 
 export type CommandCallback = (message: Discord.Message, client: Discord.Client, args: string[]) => unknown;
 export function command(prefix: string, commandName: string, callback: CommandCallback): MessageFeature {
-  return (message: Discord.Message, client: Discord.Client, next: NextFunction) => {
+  return (message: Discord.Message, client: Discord.Client) => {
     const content = message.content;
     if (content.slice(0, prefix.length) !== prefix) {
-      next();
       return;
     }
 
@@ -46,7 +27,6 @@ export function command(prefix: string, commandName: string, callback: CommandCa
       .filter(str => str !== '');
 
     if (args[0] !== commandName) {
-      next();
       return;
     }
 
