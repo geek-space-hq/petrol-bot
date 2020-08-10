@@ -2,6 +2,7 @@ import Discord from 'discord.js';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
 
+import { onMessage } from '../bot';
 import { spawnChild } from '../lib/async-process';
 import { getConfig, getSubItem } from '../lib/config';
 
@@ -58,7 +59,7 @@ async function getLanguages(): Promise<Languages> {
   return languages;
 }
 
-export async function execCode(message: Discord.Message, client: Discord.Client) {
+export const execCode = onMessage(async (message: Discord.Message, client: Discord.Client) => {
   if (!message.guild || !client.user || message.author.id === client.user.id) {
     return;
   }
@@ -139,4 +140,4 @@ export async function execCode(message: Discord.Message, client: Discord.Client)
   } else {
     message.channel.send('ソースコードか言語名が指定されていません。');
   }
-}
+});

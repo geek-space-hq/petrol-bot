@@ -22,8 +22,8 @@ export function onMessage(callback: MessageFeature): Module {
 }
 
 export type CommandCallback = (message: Discord.Message, client: Discord.Client, args: string[]) => unknown;
-export function command(prefix: string, commandName: string, callback: CommandCallback): MessageFeature {
-  return (message: Discord.Message, client: Discord.Client) => {
+export function command(prefix: string, commandName: string, callback: CommandCallback): Module {
+  return onMessage((message: Discord.Message, client: Discord.Client) => {
     const content = message.content;
     if (content.slice(0, prefix.length) !== prefix) {
       return;
@@ -39,7 +39,7 @@ export function command(prefix: string, commandName: string, callback: CommandCa
     }
 
     callback(message, client, args.slice(1));
-  };
+  });
 }
 
 export async function boot(token: string): Promise<Bot> {

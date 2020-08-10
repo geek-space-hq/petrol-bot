@@ -1,4 +1,4 @@
-import { boot, command, onMessage } from './bot';
+import { boot } from './bot';
 import { execCode } from './modules/exec-code';
 import { limitHistory, limitHistoryCommand } from './modules/limit-history';
 import { quote } from './modules/quote';
@@ -15,11 +15,11 @@ async function main() {
 
   const bot = await boot(token);
 
-  bot.install(onMessage(execCode));
-  bot.install(onMessage(limitHistory));
-  bot.install(onMessage(command('ps!', 'meslimit', limitHistoryCommand)));
-  bot.install(onMessage(quote));
-  bot.install(onMessage(searchVimHelp));
+  bot.install(execCode);
+  bot.install(limitHistory);
+  bot.install(limitHistoryCommand);
+  bot.install(quote);
+  bot.install(searchVimHelp);
 
   console.log('Ready');
 }
