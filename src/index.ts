@@ -16,8 +16,7 @@ async function main() {
   const bot = await boot(token);
 
   bot.install(execCode);
-  bot.install(limitHistory);
-  bot.install(limitHistoryCommand);
+  bot.install([limitHistory, limitHistoryCommand]);
   bot.install(quote);
   bot.install(searchVimHelp);
 

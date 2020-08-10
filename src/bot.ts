@@ -5,8 +5,11 @@ export type Module = (client: Discord.Client) => void;
 class Bot {
   constructor(private client: Discord.Client) {}
 
-  public install(module: Module) {
-    module(this.client);
+  public install(module: Module | Module[]) {
+    const modules = [module].flat();
+    modules.forEach(module => {
+      module(this.client);
+    });
   }
 }
 
