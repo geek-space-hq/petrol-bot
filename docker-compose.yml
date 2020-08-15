@@ -7,24 +7,14 @@ services:
     privileged: true
     links:
       - redis
-    networks:
-      - internal_network
-      - external_network
     environment:
       - PETROL_TOKEN
 
   redis:
     restart: always
     image: redis:6.0.4-alpine
-    networks:
-      - internal_network
     volumes:
       - redis-volume:/data
-    
-networks:
-  internal_network:
-    internal: true
-  external_network:
 
 volumes:
   redis-volume:
