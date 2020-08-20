@@ -31,4 +31,4 @@ async function searchVimHelp(message: Discord.Message, client: Discord.Client) {
   }
 }
 
-export default onMessage(searchVimHelp)
+export default onMessage(searchVimHelp);

@@ -102,38 +102,38 @@ async function removeLimit(member: Discord.GuildMember, channelId: string) {
 }
 
 async function limitHistoryCommand(message: Discord.Message, _: Discord.Client, args: string[]) {
-    const operation = args[0] || 'status';
-    const channelId = message.channel.id;
-    const guild = message.guild;
+  const operation = args[0] || 'status';
+  const channelId = message.channel.id;
+  const guild = message.guild;
 
-    if (!guild) {
-      return;
+  if (!guild) {
+    return;
+  }
+
+  const member = await guild.members.fetch(message.author.id);
+
+  const result: string = await (async () => {
+    switch (operation) {
+      case 'status':
+        return await status(member, channelId);
+
+      case 'allow':
+        return await allow(member, args);
+
+      case 'disallow':
+        return await disallow(member, args);
+
+      case 'enable':
+        return await setLimit(member, channelId, Number(args[1] || 10));
+
+      case 'disable':
+        return await removeLimit(member, channelId);
+
+      default:
+        return errors.unknown;
     }
-
-    const member = await guild.members.fetch(message.author.id);
-
-    const result: string = await (async () => {
-      switch (operation) {
-        case 'status':
-          return await status(member, channelId);
-
-        case 'allow':
-          return await allow(member, args);
-
-        case 'disallow':
-          return await disallow(member, args);
-
-        case 'enable':
-          return await setLimit(member, channelId, Number(args[1] || 10));
-
-        case 'disable':
-          return await removeLimit(member, channelId);
-
-        default:
-          return errors.unknown;
-      }
-    })();
-    message.channel.send(result);
+  })();
+  message.channel.send(result);
 }
 
 async function limitHistory(message: Discord.Message, _client: Discord.Client) {
@@ -152,7 +152,4 @@ async function limitHistory(message: Discord.Message, _client: Discord.Client) {
   }
 }
 
-export default [
-  command('ps!', 'meslimit', limitHistoryCommand),
-  onMessage(limitHistory),
-]
+export default [command('ps!', 'meslimit', limitHistoryCommand), onMessage(limitHistory)];

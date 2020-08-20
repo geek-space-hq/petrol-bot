@@ -52,4 +52,4 @@ async function quote(message: Discord.Message, client: Discord.Client) {
   }
 }
 
-export default onMessage(quote)
+export default onMessage(quote);

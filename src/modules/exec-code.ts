@@ -142,4 +142,4 @@ async function execCode(message: Discord.Message, client: Discord.Client) {
   }
 }
 
-export default onMessage(execCode)
+export default onMessage(execCode);
