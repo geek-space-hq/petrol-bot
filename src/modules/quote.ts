@@ -2,8 +2,9 @@ import Discord from 'discord.js';
 
 import { dateTime } from '../lib/date-time';
 import { resolveOrNull } from '../lib/resolver';
+import { onMessage } from '../bot';
 
-export async function quote(message: Discord.Message, client: Discord.Client) {
+async function quote(message: Discord.Message, client: Discord.Client) {
   if (!message.guild || !client.user || message.author.id === client.user.id) {
     return;
   }
@@ -50,3 +51,5 @@ export async function quote(message: Discord.Message, client: Discord.Client) {
     }
   }
 }
+
+export default onMessage(quote);

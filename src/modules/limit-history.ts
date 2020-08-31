@@ -1,5 +1,6 @@
 import Discord from 'discord.js';
 
+import { command, onMessage } from '../bot';
 import { redis } from '../lib/redis';
 import { resolveOrNull } from '../lib/resolver';
 import { allowRole, disallowRole, getAllowedRoles, isAllowed } from '../lib/roles';
@@ -100,7 +101,7 @@ async function removeLimit(member: Discord.GuildMember, channelId: string) {
   return '履歴の件数の制限を解除しました。';
 }
 
-export async function limitHistoryCommand(message: Discord.Message, _: Discord.Client, args: string[]) {
+async function limitHistoryCommand(message: Discord.Message, _: Discord.Client, args: string[]) {
   const operation = args[0] || 'status';
   const channelId = message.channel.id;
   const guild = message.guild;
@@ -135,7 +136,7 @@ export async function limitHistoryCommand(message: Discord.Message, _: Discord.C
   message.channel.send(result);
 }
 
-export async function limitHistory(message: Discord.Message, _client: Discord.Client) {
+async function limitHistory(message: Discord.Message, _client: Discord.Client) {
   const channelId = message.channel.id;
   const limit = await getLimit(channelId);
   if (limit > 0) {
@@ -150,3 +151,5 @@ export async function limitHistory(message: Discord.Message, _client: Discord.Cl
     }
   }
 }
+
+export default [command('ps!', 'meslimit', limitHistoryCommand), onMessage(limitHistory)];
