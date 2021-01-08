@@ -2,9 +2,9 @@ import Discord from 'discord.js';
 import { promises as fs } from 'fs';
 import { resolve } from 'path';
 
+import { onMessage } from '../bot';
 import { spawnChild } from '../lib/async-process';
 import { getConfig, getSubItem } from '../lib/config';
-import { onMessage } from '../bot';
 
 type Languages = {
   [key: string]: {
