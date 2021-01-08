@@ -5,7 +5,7 @@ import { resolveOrNull } from '../lib/resolver';
 import { onMessage } from '../bot';
 
 async function quote(message: Discord.Message, client: Discord.Client) {
-  if (!message.guild || !client.user || message.author.id === client.user.id) {
+  if (!message.guild || !client.user || message.author.id === client.user.id || message.author.bot) {
     return;
   }
 
