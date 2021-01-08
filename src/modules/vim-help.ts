@@ -6,7 +6,7 @@ const vimHelp = new VimHelp();
 vimHelp.helplang = ['ja', 'en']; // if Japanese help is installed, use it
 
 async function searchVimHelp(message: Discord.Message, client: Discord.Client) {
-  if (!message.guild || !client.user || message.author.id === client.user.id) {
+  if (!message.guild || !client.user || message.author.id === client.user.id || message.author.bot) {
     return;
   }
 
