@@ -1,4 +1,5 @@
 import Discord from 'discord.js';
+
 import { onMessage } from '../bot';
 
 const { VimHelp } = require('vimhelp');
