@@ -1,4 +1,5 @@
 import Discord from 'discord.js';
+import { get } from 'https';
 
 import { command, onMessage } from '../bot';
 import { redis } from '../lib/redis';
@@ -13,10 +14,14 @@ async function getLimit(channelId: string): Promise<number> {
 const errors = {
   disallowed: 'あなたにこの操作は許可されていません。',
   unknown: '未知のコマンドです。',
-  unspecified: 'ロールを指定してください。',
-  notfound: 'ロールが見つかりませんでした。',
+  roleUnspecified: 'ロールを指定してください。',
+  channelUnspecified: 'チャンネルを指定してください。',
+  roleNotfound: 'ロールが見つかりませんでした。',
+  channelNotfound: 'チャンネルが見つかりませんでした。',
+  logNotRegistered: 'ログチャンネルは登録されていません。',
   already: 'その役職は既に許可されています。',
   notYet: 'その役職は許可されていません。',
+  unexpected: '予期せぬエラーです。',
 } as const;
 
 const moduleName = 'meslimit';
@@ -44,12 +49,12 @@ async function allow(member: Discord.GuildMember, args: string[]) {
 
   const roleId = args[1];
   if (!roleId) {
-    return errors.unspecified;
+    return errors.roleUnspecified;
   }
 
   const role = guild.roles.resolve(roleId);
   if (!role) {
-    return errors.notfound;
+    return errors.roleNotfound;
   }
   const roleName = role.name;
 
@@ -64,7 +69,7 @@ async function disallow(member: Discord.GuildMember, args: string[]) {
 
   const roleId = args[1];
   if (!roleId) {
-    return errors.unspecified;
+    return errors.roleUnspecified;
   }
 
   const role = guild.roles.resolve(roleId);
@@ -97,8 +102,81 @@ async function removeLimit(member: Discord.GuildMember, channelId: string) {
 
   await redis.del(`${moduleName}/${channelId}/limit`);
   await redis.del(`${moduleName}/${channelId}/messages`);
+  await removeLog(member, channelId);
 
   return '履歴の件数の制限を解除しました。';
+}
+
+async function fetchLogWebhook(guild: Discord.Guild, channelId: string): Promise<Discord.Webhook | null> {
+  const logId = await redis.get(`${moduleName}/${channelId}/log_at`);
+  if (!logId) {
+    return null;
+  }
+  const logChannel = guild.channels.resolve(logId) as Discord.TextChannel | null;
+  if (!logChannel) {
+    return null;
+  }
+  const webhooks = await logChannel.fetchWebhooks();
+  const webhookId = await redis.get(`${moduleName}/${logId}/webhook`);
+  if (!webhookId) {
+    return null;
+  }
+  return webhooks.get(webhookId) || null;
+}
+
+async function setLog(member: Discord.GuildMember, channelId: string, logId: string) {
+  const guild = member.guild;
+  if (!(await isAllowed(moduleName, member, guild))) {
+    return errors.disallowed;
+  }
+
+  await removeLog(member, channelId);
+
+  const logChannel = guild.channels.resolve(logId) as Discord.TextChannel | null;
+
+  if (!logChannel) {
+    return errors.channelNotfound;
+  }
+
+  await redis.set(`${moduleName}/${channelId}/log_at`, logId);
+
+  const webhook = await (async () => {
+    const fetchedWebhook = await fetchLogWebhook(guild, channelId);
+    if (fetchedWebhook) {
+      return fetchedWebhook;
+    }
+
+    const webhook = await logChannel.createWebhook('meslimit log');
+    await redis.set(`${moduleName}/${logChannel.id}/webhook`, webhook.id);
+    return webhook;
+  })();
+
+  await webhook.send('Meslimit によって削除されたメッセージのログを開始しました。', {
+    username: 'Petrol Bot Meslimit',
+  });
+
+  return `#${logChannel.name}をログチャンネルに設定しました。`;
+}
+
+async function removeLog(member: Discord.GuildMember, channelId: string) {
+  const guild = member.guild;
+  if (!(await isAllowed(moduleName, member, guild))) {
+    return errors.disallowed;
+  }
+
+  const webhook = await fetchLogWebhook(guild, channelId);
+
+  if (!webhook) {
+    return errors.logNotRegistered;
+  }
+
+  await webhook.send('Meslimit によるログを終了しました。', {
+    username: 'Petrol Bot Meslimit',
+  });
+
+  await redis.del(`${moduleName}/${channelId}/log_at`);
+
+  return 'ログチャンネルを解除しました。';
 }
 
 async function limitHistoryCommand(message: Discord.Message, _: Discord.Client, args: string[]) {
@@ -129,11 +207,31 @@ async function limitHistoryCommand(message: Discord.Message, _: Discord.Client, 
       case 'disable':
         return await removeLimit(member, channelId);
 
+      case 'enable-log':
+        return await setLog(member, channelId, args[1]);
+
+      case 'disable-log':
+        return await removeLog(member, channelId);
+
       default:
         return errors.unknown;
     }
   })();
   message.channel.send(result);
+}
+
+async function downloadFile(url: string) {
+  return await new Promise<Buffer>(resolve => {
+    get(url, res => {
+      let buf = Buffer.alloc(0);
+
+      res.on('data', data => {
+        buf = Buffer.concat([buf, data]);
+      });
+
+      res.on('end', () => resolve(buf));
+    });
+  });
 }
 
 async function limitHistory(message: Discord.Message, _client: Discord.Client) {
@@ -146,6 +244,21 @@ async function limitHistory(message: Discord.Message, _client: Discord.Client) {
       const messageId = await redis.lpop(key);
       const resolved = await resolveOrNull(message.channel.messages.fetch(messageId));
       if (resolved) {
+        const webhook = await fetchLogWebhook(message.guild as Discord.Guild, channelId);
+        if (webhook) {
+          const attachments = await Promise.all(
+            resolved.attachments.map(async attachment => ({
+              attachment: await downloadFile(attachment.url),
+              name: attachment.name,
+            })),
+          );
+          await webhook.send(resolved.content, {
+            username: resolved.author.username,
+            avatarURL: resolved.author.displayAvatarURL(),
+            embeds: resolved.embeds,
+            files: attachments,
+          });
+        }
         await resolved.delete();
       }
     }
