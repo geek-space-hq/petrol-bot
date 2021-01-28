@@ -252,14 +252,19 @@ async function limitHistory(message: Discord.Message, _client: Discord.Client) {
               name: attachment.name,
             })),
           );
+          const allowedMentions = resolved.author.bot
+            ? {
+                allowedMentions: {
+                  parse: [],
+                },
+              }
+            : {};
           await webhook.send(resolved.content, {
             username: resolved.author.username,
             avatarURL: resolved.author.displayAvatarURL(),
             embeds: resolved.embeds,
             files: attachments,
-            allowedMentions: {
-              parse: [],
-            },
+            ...allowedMentions,
           });
         }
         await resolved.delete();
