@@ -257,6 +257,9 @@ async function limitHistory(message: Discord.Message, _client: Discord.Client) {
             avatarURL: resolved.author.displayAvatarURL(),
             embeds: resolved.embeds,
             files: attachments,
+            allowedMentions: {
+              parse: [],
+            },
           });
         }
         await resolved.delete();
