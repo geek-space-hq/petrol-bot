@@ -10,7 +10,7 @@ async function quote(message: Discord.Message, client: Discord.Client) {
   }
 
   const pattern = /discord(app)?\.com\/channels\/[0-9]+\/(?<channelId>[0-9]+)\/(?<messageId>[0-9]+)/g;
-  const matches = message.content.matchAll(pattern);
+  const matches = message.content.replace(/<(.+?)>/g, '').matchAll(pattern);
 
   for (const match of matches) {
     if (!match.groups) {
