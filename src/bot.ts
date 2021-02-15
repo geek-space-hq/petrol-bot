@@ -24,6 +24,15 @@ export function onMessage(callback: MessageFeature): Module {
   };
 }
 
+export type AnyEventFeature = Feature<unknown>;
+export function onAnyEvent(callback: AnyEventFeature): Module {
+  return (client: Discord.Client) => {
+    client.on('raw' as 'message' /* To make tsc happy */, event => {
+      callback(event, client);
+    });
+  };
+}
+
 export type CommandCallback = (message: Discord.Message, client: Discord.Client, args: string[]) => unknown;
 export function command(prefix: string, commandName: string, callback: CommandCallback): Module {
   return onMessage((message: Discord.Message, client: Discord.Client) => {

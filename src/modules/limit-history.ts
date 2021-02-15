@@ -1,7 +1,7 @@
 import Discord from 'discord.js';
 import { get } from 'https';
 
-import { command, onMessage } from '../bot';
+import { command, onAnyEvent, onMessage } from '../bot';
 import { redis } from '../lib/redis';
 import { resolveOrNull } from '../lib/resolver';
 import { allowRole, disallowRole, getAllowedRoles, isAllowed } from '../lib/roles';
@@ -107,17 +107,21 @@ async function removeLimit(member: Discord.GuildMember, channelId: string) {
   return '履歴の件数の制限を解除しました。';
 }
 
-async function fetchLogWebhook(guild: Discord.Guild, channelId: string): Promise<Discord.Webhook | null> {
+async function resolveLog(guild: Discord.Guild, channelId: string): Promise<Discord.TextChannel | null> {
   const logId = await redis.get(`${moduleName}/${channelId}/log_at`);
   if (!logId) {
     return null;
   }
-  const logChannel = guild.channels.resolve(logId) as Discord.TextChannel | null;
+  return guild.channels.resolve(logId) as Discord.TextChannel | null;
+}
+
+async function fetchLogWebhook(guild: Discord.Guild, channelId: string): Promise<Discord.Webhook | null> {
+  const logChannel = await resolveLog(guild, channelId);
   if (!logChannel) {
     return null;
   }
   const webhooks = await logChannel.fetchWebhooks();
-  const webhookId = await redis.get(`${moduleName}/${logId}/webhook`);
+  const webhookId = await redis.get(`${moduleName}/${logChannel.id}/webhook`);
   if (!webhookId) {
     return null;
   }
@@ -259,13 +263,14 @@ async function limitHistory(message: Discord.Message, _client: Discord.Client) {
                 },
               }
             : {};
-          await webhook.send(resolved.content, {
+          const message = await webhook.send(resolved.content, {
             username: resolved.author.username,
             avatarURL: resolved.author.displayAvatarURL(),
             embeds: resolved.embeds,
             files: attachments,
             ...allowedMentions,
           });
+          await redis.set(`${moduleName}/${message.id}/author`, resolved.author.id);
         }
         await resolved.delete();
       }
@@ -273,4 +278,36 @@ async function limitHistory(message: Discord.Message, _client: Discord.Client) {
   }
 }
 
-export default [command('ps!', 'meslimit', limitHistoryCommand), onMessage(limitHistory)];
+async function removeLogOnReaction(event: any, client: Discord.Client) {
+  if (event.t !== 'MESSAGE_REACTION_ADD') {
+    return;
+  }
+
+  const authorId = await redis.get(`${moduleName}/${event.d.message_id}/author`);
+  if (event.d.user_id !== authorId) {
+    return;
+  }
+
+  const guild = client.guilds.resolve(event.d.guild_id);
+  if (guild === null) {
+    return;
+  }
+
+  const channel = guild.channels.resolve(event.d.channel_id) as Discord.TextChannel | null;
+  if (channel === null) {
+    return;
+  }
+
+  const message = await channel.messages.fetch(event.d.message_id);
+  if (message === null) {
+    return;
+  }
+
+  await message.delete();
+}
+
+export default [
+  command('ps!', 'meslimit', limitHistoryCommand),
+  onMessage(limitHistory),
+  onAnyEvent(removeLogOnReaction),
+];
